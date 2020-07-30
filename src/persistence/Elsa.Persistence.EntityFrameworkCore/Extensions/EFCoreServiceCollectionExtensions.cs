@@ -11,7 +11,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Extensions
 {
     public static class EFCoreServiceCollectionExtensions
     {
-        public static EntityFrameworkCoreElsaBuilder AddEntityFrameworkCoreProvider<TElsaContext>(
+        private static EntityFrameworkCoreElsaBuilder AddEntityFrameworkCoreProvider<TElsaContext>(
             this ElsaBuilder configuration,
             Action<DbContextOptionsBuilder> configureOptions,
             bool usePooling = true)
@@ -42,7 +42,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Extensions
                 .AddWorkflowInstanceStore();
         }
 
-        public static EntityFrameworkCoreElsaBuilder AddWorkflowInstanceStore(this EntityFrameworkCoreElsaBuilder configuration)
+        private static EntityFrameworkCoreElsaBuilder AddWorkflowInstanceStore(this EntityFrameworkCoreElsaBuilder configuration)
         {
             configuration.Services
                 .AddScoped<IWorkflowInstanceStore, EntityFrameworkCoreWorkflowInstanceStore>();
@@ -50,7 +50,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Extensions
             return configuration;
         }
 
-        public static EntityFrameworkCoreElsaBuilder AddWorkflowDefinitionStore(this EntityFrameworkCoreElsaBuilder configuration)
+        private static EntityFrameworkCoreElsaBuilder AddWorkflowDefinitionStore(this EntityFrameworkCoreElsaBuilder configuration)
         {
             configuration.Services
                 .AddScoped<IWorkflowDefinitionStore, EntityFrameworkCoreWorkflowDefinitionStore>();

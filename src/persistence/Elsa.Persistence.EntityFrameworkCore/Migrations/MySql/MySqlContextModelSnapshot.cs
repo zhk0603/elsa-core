@@ -15,7 +15,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Migrations.MySql
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.0")
+                .HasAnnotation("ProductVersion", "3.1.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("Elsa.Persistence.EntityFrameworkCore.Entities.ActivityDefinitionEntity", b =>
@@ -28,8 +28,17 @@ namespace Elsa.Persistence.EntityFrameworkCore.Migrations.MySql
                     b.Property<string>("ActivityId")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("DisplayName")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
                     b.Property<int>("Left")
                         .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("State")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
@@ -58,6 +67,15 @@ namespace Elsa.Persistence.EntityFrameworkCore.Migrations.MySql
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("ActivityId")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("DisplayName")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Name")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Output")
@@ -124,6 +142,43 @@ namespace Elsa.Persistence.EntityFrameworkCore.Migrations.MySql
                     b.HasIndex("WorkflowDefinitionVersionId");
 
                     b.ToTable("ConnectionDefinitions");
+                });
+
+            modelBuilder.Entity("Elsa.Persistence.EntityFrameworkCore.Entities.ExecutionActivityEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("ActivityId")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("ActivityType")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<DateTime?>("FaultedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("HandleStatus")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("WorkflowInstanceId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkflowInstanceId");
+
+                    b.ToTable("ExecutionActivities");
                 });
 
             modelBuilder.Entity("Elsa.Persistence.EntityFrameworkCore.Entities.WorkflowDefinitionVersionEntity", b =>
@@ -249,6 +304,13 @@ namespace Elsa.Persistence.EntityFrameworkCore.Migrations.MySql
                     b.HasOne("Elsa.Persistence.EntityFrameworkCore.Entities.WorkflowDefinitionVersionEntity", "WorkflowDefinitionVersion")
                         .WithMany("Connections")
                         .HasForeignKey("WorkflowDefinitionVersionId");
+                });
+
+            modelBuilder.Entity("Elsa.Persistence.EntityFrameworkCore.Entities.ExecutionActivityEntity", b =>
+                {
+                    b.HasOne("Elsa.Persistence.EntityFrameworkCore.Entities.WorkflowInstanceEntity", "WorkflowInstance")
+                        .WithMany("ExecutionActivities")
+                        .HasForeignKey("WorkflowInstanceId");
                 });
 #pragma warning restore 612, 618
         }

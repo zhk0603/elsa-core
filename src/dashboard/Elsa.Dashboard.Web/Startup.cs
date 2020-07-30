@@ -2,9 +2,11 @@ using Elsa.Activities.Email.Extensions;
 using Elsa.Activities.Http.Extensions;
 using Elsa.Activities.Timers.Extensions;
 using Elsa.Dashboard.Extensions;
-using Elsa.Persistence.MongoDb.Extensions;
+using Elsa.Persistence.EntityFrameworkCore.DbContexts;
+using Elsa.Persistence.EntityFrameworkCore.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -26,7 +28,10 @@ namespace Elsa.Dashboard.Web
             
             services
                 // Add workflow services.
-                .AddElsa(x => x.AddMongoDbStores(Configuration, "Elsa", "MongoDb"))
+                .AddElsa(x => x.AddEntityFrameworkStores<SqlServerContext>(options =>
+                {
+                    options.UseSqlServer(Configuration.GetConnectionString("SqlServer"));
+                }))
                 
                 // Add activities we'd like to use.
                 // Configuring the activities as is done here is only required if we want to be able to actually run workflows form this application.

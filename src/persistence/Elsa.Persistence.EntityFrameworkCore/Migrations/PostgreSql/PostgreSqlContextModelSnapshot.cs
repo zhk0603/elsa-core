@@ -16,7 +16,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Migrations.PostgreSql
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
-                .HasAnnotation("ProductVersion", "3.0.1")
+                .HasAnnotation("ProductVersion", "3.1.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             modelBuilder.Entity("Elsa.Persistence.EntityFrameworkCore.Entities.ActivityDefinitionEntity", b =>
@@ -29,8 +29,17 @@ namespace Elsa.Persistence.EntityFrameworkCore.Migrations.PostgreSql
                     b.Property<string>("ActivityId")
                         .HasColumnType("text");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DisplayName")
+                        .HasColumnType("text");
+
                     b.Property<int>("Left")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
 
                     b.Property<string>("State")
                         .HasColumnType("text");
@@ -59,6 +68,15 @@ namespace Elsa.Persistence.EntityFrameworkCore.Migrations.PostgreSql
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("ActivityId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DisplayName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
                         .HasColumnType("text");
 
                     b.Property<string>("Output")
@@ -127,6 +145,44 @@ namespace Elsa.Persistence.EntityFrameworkCore.Migrations.PostgreSql
                     b.HasIndex("WorkflowDefinitionVersionId");
 
                     b.ToTable("ConnectionDefinitions");
+                });
+
+            modelBuilder.Entity("Elsa.Persistence.EntityFrameworkCore.Entities.ExecutionActivityEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("ActivityId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ActivityType")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("FaultedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("HandleStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("WorkflowInstanceId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkflowInstanceId");
+
+                    b.ToTable("ExecutionActivities");
                 });
 
             modelBuilder.Entity("Elsa.Persistence.EntityFrameworkCore.Entities.WorkflowDefinitionVersionEntity", b =>
@@ -252,6 +308,13 @@ namespace Elsa.Persistence.EntityFrameworkCore.Migrations.PostgreSql
                     b.HasOne("Elsa.Persistence.EntityFrameworkCore.Entities.WorkflowDefinitionVersionEntity", "WorkflowDefinitionVersion")
                         .WithMany("Connections")
                         .HasForeignKey("WorkflowDefinitionVersionId");
+                });
+
+            modelBuilder.Entity("Elsa.Persistence.EntityFrameworkCore.Entities.ExecutionActivityEntity", b =>
+                {
+                    b.HasOne("Elsa.Persistence.EntityFrameworkCore.Entities.WorkflowInstanceEntity", "WorkflowInstance")
+                        .WithMany("ExecutionActivities")
+                        .HasForeignKey("WorkflowInstanceId");
                 });
 #pragma warning restore 612, 618
         }

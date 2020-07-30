@@ -4,6 +4,7 @@ using Elsa.Persistence.EntityFrameworkCore.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Elsa.Persistence.EntityFrameworkCore.Migrations.Sqlite
 {
@@ -14,19 +15,29 @@ namespace Elsa.Persistence.EntityFrameworkCore.Migrations.Sqlite
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.0.1");
+                .HasAnnotation("ProductVersion", "3.1.1");
 
             modelBuilder.Entity("Elsa.Persistence.EntityFrameworkCore.Entities.ActivityDefinitionEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("ActivityId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DisplayName")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("Left")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("State")
                         .HasColumnType("TEXT");
@@ -51,9 +62,19 @@ namespace Elsa.Persistence.EntityFrameworkCore.Migrations.Sqlite
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("ActivityId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DisplayName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Output")
@@ -122,11 +143,49 @@ namespace Elsa.Persistence.EntityFrameworkCore.Migrations.Sqlite
                     b.ToTable("ConnectionDefinitions");
                 });
 
-            modelBuilder.Entity("Elsa.Persistence.EntityFrameworkCore.Entities.WorkflowDefinitionVersionEntity", b =>
+            modelBuilder.Entity("Elsa.Persistence.EntityFrameworkCore.Entities.ExecutionActivityEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("ActivityId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ActivityType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("FaultedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("HandleStatus")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("WorkflowInstanceId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkflowInstanceId");
+
+                    b.ToTable("ExecutionActivities");
+                });
+
+            modelBuilder.Entity("Elsa.Persistence.EntityFrameworkCore.Entities.WorkflowDefinitionVersionEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("DefinitionId")
                         .HasColumnType("TEXT");
@@ -167,7 +226,8 @@ namespace Elsa.Persistence.EntityFrameworkCore.Migrations.Sqlite
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<DateTime?>("AbortedAt")
                         .HasColumnType("TEXT");
@@ -243,6 +303,13 @@ namespace Elsa.Persistence.EntityFrameworkCore.Migrations.Sqlite
                     b.HasOne("Elsa.Persistence.EntityFrameworkCore.Entities.WorkflowDefinitionVersionEntity", "WorkflowDefinitionVersion")
                         .WithMany("Connections")
                         .HasForeignKey("WorkflowDefinitionVersionId");
+                });
+
+            modelBuilder.Entity("Elsa.Persistence.EntityFrameworkCore.Entities.ExecutionActivityEntity", b =>
+                {
+                    b.HasOne("Elsa.Persistence.EntityFrameworkCore.Entities.WorkflowInstanceEntity", "WorkflowInstance")
+                        .WithMany("ExecutionActivities")
+                        .HasForeignKey("WorkflowInstanceId");
                 });
 #pragma warning restore 612, 618
         }

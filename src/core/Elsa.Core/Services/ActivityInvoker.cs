@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Elsa.Results;
@@ -16,7 +16,7 @@ namespace Elsa.Services
             this.logger = logger;
         }
 
-        public async Task<ActivityExecutionResult> ExecuteAsync(
+        public virtual async Task<ActivityExecutionResult> ExecuteAsync(
             WorkflowExecutionContext workflowContext,
             IActivity activity,
             CancellationToken cancellationToken = default)
@@ -28,7 +28,7 @@ namespace Elsa.Services
             );
         }
 
-        public async Task<ActivityExecutionResult> ResumeAsync(
+        public virtual async Task<ActivityExecutionResult> ResumeAsync(
             WorkflowExecutionContext workflowContext,
             IActivity activity,
             CancellationToken cancellationToken = default)
@@ -40,7 +40,7 @@ namespace Elsa.Services
             );
         }
 
-        public async Task<ActivityExecutionResult> HaltedAsync(
+        public virtual async Task<ActivityExecutionResult> HaltedAsync(
             WorkflowExecutionContext workflowContext,
             IActivity activity, CancellationToken cancellationToken = default)
         {
@@ -51,7 +51,20 @@ namespace Elsa.Services
             );
         }
 
-        private async Task<ActivityExecutionResult> InvokeAsync(
+        public virtual async Task<ActivityExecutionResult> FallbackAsync(
+            WorkflowExecutionContext workflowContext,
+            IActivity activity,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return await InvokeAsync(
+                workflowContext,
+                activity,
+                (a) => a.FallbackAsync(workflowContext, cancellationToken)
+            );
+        }
+
+        protected virtual async Task<ActivityExecutionResult> InvokeAsync(
             WorkflowExecutionContext workflowContext,
             IActivity activity,
             Func<IActivity, Task<ActivityExecutionResult>> invokeAction)

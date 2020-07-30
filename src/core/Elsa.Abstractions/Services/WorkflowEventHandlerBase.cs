@@ -6,10 +6,21 @@ namespace Elsa.Services
 {
     public abstract class WorkflowEventHandlerBase : IWorkflowEventHandler
     {
+        public Task ActivityExecutingAsync(
+            WorkflowExecutionContext workflowExecutionContext,
+            IActivity activity,
+            CancellationToken cancellationToken
+        )
+        {
+            ActivityExecuting(workflowExecutionContext, activity);
+            return Task.CompletedTask;
+        }
+
         public virtual Task ActivityExecutedAsync(
             WorkflowExecutionContext workflowExecutionContext,
             IActivity activity,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             ActivityExecuted(workflowExecutionContext, activity);
             return Task.CompletedTask;
@@ -19,15 +30,28 @@ namespace Elsa.Services
             WorkflowExecutionContext workflowExecutionContext,
             IActivity activity,
             string message,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             ActivityFaulted(workflowExecutionContext, activity, message);
             return Task.CompletedTask;
         }
 
+        public Task ActivityFallbackedAsync(
+            WorkflowExecutionContext workflowExecutionContext,
+            IActivity activity,
+            CancellationToken cancellationToken
+        )
+        {
+            ActivityFallbacked(workflowExecutionContext, activity);
+            return Task.CompletedTask;
+        }
+
+
         public virtual Task InvokingHaltedActivitiesAsync(
             WorkflowExecutionContext workflowExecutionContext,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             InvokingHaltedActivities(workflowExecutionContext);
             return Task.CompletedTask;
@@ -35,10 +59,19 @@ namespace Elsa.Services
 
         public virtual Task WorkflowInvokedAsync(
             WorkflowExecutionContext workflowExecutionContext,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             WorkflowInvoked(workflowExecutionContext);
             return Task.CompletedTask;
+        }
+
+        protected virtual void ActivityFallbacked(WorkflowExecutionContext workflowExecutionContext, IActivity activity)
+        {
+        }
+
+        protected virtual void ActivityExecuting(WorkflowExecutionContext workflowExecutionContext, IActivity activity)
+        {
         }
 
         protected virtual void ActivityExecuted(WorkflowExecutionContext workflowExecutionContext, IActivity activity)
@@ -48,7 +81,8 @@ namespace Elsa.Services
         protected virtual void ActivityFaulted(
             WorkflowExecutionContext workflowExecutionContext,
             IActivity activity,
-            string message)
+            string message
+        )
         {
         }
 

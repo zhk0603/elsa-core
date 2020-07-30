@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Elsa.Comparers;
@@ -28,8 +28,6 @@ namespace Elsa.Services.Models
             Input = new Variables(input ?? Variables.Empty);
         }
 
-        
-
         public Workflow()
         {
             Scopes = new Stack<WorkflowExecutionScope>(new[] { new WorkflowExecutionScope() });
@@ -50,6 +48,7 @@ namespace Elsa.Services.Models
         public IList<Connection> Connections { get; } = new List<Connection>();
         public Stack<WorkflowExecutionScope> Scopes { get; set; }
         public HashSet<IActivity> BlockingActivities { get; set; }
+        public IList<ExecutionActivity> ExecutionActivities { get; set; }
         public IList<LogEntry> ExecutionLog { get; set; }
         public WorkflowFault Fault { get; set; }
         public Variables Input { get; set; }
@@ -72,6 +71,7 @@ namespace Elsa.Services.Models
                 FaultedAt = FaultedAt,
                 AbortedAt = AbortedAt,
                 Activities = activities,
+                ExecutionActivities = ExecutionActivities,
                 Scopes = new Stack<WorkflowExecutionScope>(Scopes),
                 
                 BlockingActivities = new HashSet<BlockingActivity>(
@@ -100,6 +100,7 @@ namespace Elsa.Services.Models
             FaultedAt = instance.FaultedAt;
             AbortedAt = instance.AbortedAt;
             ExecutionLog = instance.ExecutionLog.ToList();
+            ExecutionActivities = instance.ExecutionActivities.ToList();
 
             BlockingActivities =
                 new HashSet<IActivity>(instance.BlockingActivities.Select(x => activityLookup[x.ActivityId]));

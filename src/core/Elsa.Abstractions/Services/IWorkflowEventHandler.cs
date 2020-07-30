@@ -9,6 +9,7 @@ namespace Elsa.Services
     /// </summary>
     public interface IWorkflowEventHandler
     {
+        Task ActivityExecutingAsync(WorkflowExecutionContext workflowExecutionContext, IActivity activity, CancellationToken cancellationToken);
 
         /// <summary>
         /// Invoked when an activity has executed.
@@ -19,7 +20,12 @@ namespace Elsa.Services
         /// Invoked when an activity has faulted.
         /// </summary>
         Task ActivityFaultedAsync(WorkflowExecutionContext workflowExecutionContext, IActivity activity, string message, CancellationToken cancellationToken);
-        
+
+        /// <summary>
+        /// Invoked when an activity has fallback.
+        /// </summary>
+        Task ActivityFallbackedAsync(WorkflowExecutionContext workflowExecutionContext, IActivity activity, CancellationToken cancellationToken);
+
         /// <summary>
         /// Invoked when halted activities are about to be executed.
         /// </summary>

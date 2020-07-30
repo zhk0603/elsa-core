@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,8 +45,11 @@ namespace Elsa.Services
         }
 
         public Task<bool> CanExecuteAsync(WorkflowExecutionContext context, CancellationToken cancellationToken) => OnCanExecuteAsync(context, cancellationToken);
+        public Task<bool> CanFallbackAsync(WorkflowExecutionContext context, CancellationToken cancellationToken = default) => OnCanFallbackAsync(context,cancellationToken);
+
         public Task<ActivityExecutionResult> ExecuteAsync(WorkflowExecutionContext context, CancellationToken cancellationToken) => OnExecuteAsync(context, cancellationToken);
         public Task<ActivityExecutionResult> HaltedAsync(WorkflowExecutionContext context, CancellationToken cancellationToken) => OnHaltedAsync(context, cancellationToken);
+        public Task<ActivityExecutionResult>  FallbackAsync(WorkflowExecutionContext context, CancellationToken cancellationToken = default) => OnFallbackAsync(context, cancellationToken);
 
         public ActivityInstance ToInstance() => new ActivityInstance
         {
@@ -58,12 +61,16 @@ namespace Elsa.Services
 
         public Task<ActivityExecutionResult> ResumeAsync(WorkflowExecutionContext context, CancellationToken cancellationToken) => OnResumeAsync(context, cancellationToken);
         protected virtual Task<bool> OnCanExecuteAsync(WorkflowExecutionContext context, CancellationToken cancellationToken) => Task.FromResult(OnCanExecute(context));
+        protected virtual Task<bool> OnCanFallbackAsync(WorkflowExecutionContext context, CancellationToken cancellationToken) => Task.FromResult(OnCanFallback(context));
         protected virtual Task<ActivityExecutionResult> OnExecuteAsync(WorkflowExecutionContext context, CancellationToken cancellationToken) => Task.FromResult(OnExecute(context));
         protected virtual Task<ActivityExecutionResult> OnHaltedAsync(WorkflowExecutionContext context, CancellationToken cancellationToken) => Task.FromResult(OnHalted(context));
+        protected virtual Task<ActivityExecutionResult> OnFallbackAsync(WorkflowExecutionContext context, CancellationToken cancellationToken) => Task.FromResult(OnFallback(context));
         protected virtual Task<ActivityExecutionResult> OnResumeAsync(WorkflowExecutionContext context, CancellationToken cancellationToken) => Task.FromResult(OnResume(context));
         protected virtual bool OnCanExecute(WorkflowExecutionContext context) => true;
+        protected virtual bool OnCanFallback(WorkflowExecutionContext context) => true;
         protected virtual ActivityExecutionResult OnExecute(WorkflowExecutionContext context) => Noop();
         protected virtual ActivityExecutionResult OnHalted(WorkflowExecutionContext context) => Noop();
+        protected virtual ActivityExecutionResult OnFallback(WorkflowExecutionContext context) => Noop();
         protected virtual ActivityExecutionResult OnResume(WorkflowExecutionContext context) => Noop();
         protected NoopResult Noop() => new NoopResult();
 

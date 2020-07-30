@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using Elsa.Models;
 using Elsa.Results;
@@ -43,6 +43,14 @@ namespace Elsa.Services.Models
         Task<bool> CanExecuteAsync(WorkflowExecutionContext context, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Returns a value of whether the specified activity can fallback.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<bool> CanFallbackAsync(WorkflowExecutionContext context, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Executes the specified activity.
         /// </summary>
         Task<ActivityExecutionResult> ExecuteAsync(WorkflowExecutionContext context, CancellationToken cancellationToken = default);
@@ -56,6 +64,14 @@ namespace Elsa.Services.Models
         /// Invoked when the workflow is halted.
         /// </summary>
         Task<ActivityExecutionResult> HaltedAsync(WorkflowExecutionContext context, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Fallback the specified activity.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<ActivityExecutionResult> FallbackAsync(WorkflowExecutionContext context, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates an instance representation of this activity.

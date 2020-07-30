@@ -37,7 +37,9 @@ namespace Elsa.Services.Models
         public WorkflowExecutionScope CurrentScope => Workflow.Scopes.Peek();
         public Variables TransientState { get; } = new Variables();
         public IActivity CurrentActivity { get; private set; }
-        public void ScheduleActivities(params IActivity[] activities) => ScheduleActivities((IEnumerable<IActivity>)activities);
+
+        public void ScheduleActivities(params IActivity[] activities) =>
+            ScheduleActivities((IEnumerable<IActivity>) activities);
 
         public void ScheduleActivities(IEnumerable<IActivity> activities)
         {
@@ -125,5 +127,12 @@ namespace Elsa.Services.Models
             .Reverse()
             .Select(x => x.Variables)
             .Aggregate(Variables.Empty, (x, y) => new Variables(x.Union(y)));
+
+        public ExecutionActivity GetActivityLastExecutionEntry(IActivity activity)
+        {
+            return Workflow.ExecutionActivities
+                .OrderByDescending(x => x.StartedAt)
+                .FirstOrDefault(x => x.ActivityId == activity.Id);
+        }
     }
 }

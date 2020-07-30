@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,6 +47,56 @@ namespace Elsa.Services
             WorkflowInstance workflowInstance,
             Variables input = default,
             IEnumerable<string> startActivityIds = default,
+            CancellationToken cancellationToken = default
+        );
+
+        /// <summary>
+        /// 从阻断的 activity 回退至流程之前执行过的 activity
+        /// </summary>
+        /// <param name="workflow"></param>
+        /// <param name="blockingActivities"></param>
+        /// <param name="historyActivities"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<WorkflowExecutionContext> FallbackAsync(
+            Workflow workflow,
+            IEnumerable<IActivity> blockingActivities = default,
+            IEnumerable<IActivity> historyActivities = default,
+            CancellationToken cancellationToken = default
+        );
+
+        /// <summary>
+        /// 从阻断的 activity 回退至流程之前执行过的 activity
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="workflowInstance"></param>
+        /// <param name="input"></param>
+        /// <param name="blockingActivityIds"></param>
+        /// <param name="historyActivityIds"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<WorkflowExecutionContext> FallbackAsync<T>(
+            WorkflowInstance workflowInstance,
+            Variables input = default,
+            IEnumerable<string> blockingActivityIds = default,
+            IEnumerable<string> historyActivityIds = default,
+            CancellationToken cancellationToken = default
+        ) where T : IWorkflow, new();
+
+        /// <summary>
+        /// 从阻断的 activity 回退至流程之前执行过的 activity
+        /// </summary>
+        /// <param name="workflowInstance"></param>
+        /// <param name="input"></param>
+        /// <param name="blockingActivityIds"></param>
+        /// <param name="historyActivityIds"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<WorkflowExecutionContext> FallbackAsync(
+            WorkflowInstance workflowInstance,
+            Variables input = default,
+            IEnumerable<string> blockingActivityIds = default,
+            IEnumerable<string> historyActivityIds = default,
             CancellationToken cancellationToken = default
         );
 

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -122,6 +122,12 @@ namespace Elsa.Activities.ControlFlow.Activities
             return $"@{sourceActivityId}_{sourceOutcomeName}";
         }
 
+        public Task ActivityExecutingAsync(
+            WorkflowExecutionContext workflowExecutionContext,
+            IActivity activity,
+            CancellationToken cancellationToken
+        ) => Task.CompletedTask;
+
         Task IWorkflowEventHandler.ActivityExecutedAsync(
             WorkflowExecutionContext workflowContext,
             IActivity activity,
@@ -137,6 +143,12 @@ namespace Elsa.Activities.ControlFlow.Activities
             IActivity activity,
             string message,
             CancellationToken cancellationToken) => Task.CompletedTask;
+
+        public Task ActivityFallbackedAsync(
+            WorkflowExecutionContext workflowExecutionContext,
+            IActivity activity,
+            CancellationToken cancellationToken
+        ) => Task.CompletedTask;
 
         Task IWorkflowEventHandler.InvokingHaltedActivitiesAsync(
             WorkflowExecutionContext workflowExecutionContext,

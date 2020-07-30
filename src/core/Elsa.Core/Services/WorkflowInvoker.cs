@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -15,7 +15,7 @@ using NodaTime;
 
 namespace Elsa.Services
 {
-    internal class WorkflowInvoker : IWorkflowInvoker
+    public class WorkflowInvoker : IWorkflowInvoker
     {
         private readonly IActivityInvoker activityInvoker;
         private readonly IWorkflowFactory workflowFactory;
@@ -46,7 +46,7 @@ namespace Elsa.Services
             this.logger = logger;
         }
 
-        public Task<WorkflowExecutionContext> StartAsync(
+        public virtual Task<WorkflowExecutionContext> StartAsync(
             Workflow workflow,
             IEnumerable<IActivity> startActivities = default,
             CancellationToken cancellationToken = default)
@@ -54,7 +54,7 @@ namespace Elsa.Services
             return ExecuteAsync(workflow, false, startActivities, cancellationToken);
         }
 
-        public Task<WorkflowExecutionContext> StartAsync(
+        public virtual Task<WorkflowExecutionContext> StartAsync(
             WorkflowDefinitionVersion workflowDefinition,
             Variables input = default,
             IEnumerable<string> startActivityIds = default,
@@ -67,7 +67,7 @@ namespace Elsa.Services
             return ExecuteAsync(workflow, false, startActivities, cancellationToken);
         }
 
-        public Task<WorkflowExecutionContext> StartAsync<T>(
+        public virtual Task<WorkflowExecutionContext> StartAsync<T>(
             Variables input = default,
             IEnumerable<string> startActivityIds = default,
             string correlationId = default,
@@ -79,7 +79,7 @@ namespace Elsa.Services
             return ExecuteAsync(workflow, false, startActivities, cancellationToken);
         }
 
-        public Task<WorkflowExecutionContext> ResumeAsync(
+        public virtual Task<WorkflowExecutionContext> ResumeAsync(
             Workflow workflow,
             IEnumerable<IActivity> startActivities = default,
             CancellationToken cancellationToken = default)
@@ -87,7 +87,7 @@ namespace Elsa.Services
             return ExecuteAsync(workflow, true, startActivities, cancellationToken);
         }
 
-        public Task<WorkflowExecutionContext> ResumeAsync<T>(
+        public virtual Task<WorkflowExecutionContext> ResumeAsync<T>(
             WorkflowInstance workflowInstance,
             Variables input = null,
             IEnumerable<string> startActivityIds = default,
@@ -98,7 +98,7 @@ namespace Elsa.Services
             return ExecuteAsync(workflow, true, startActivities, cancellationToken);
         }
 
-        public async Task<WorkflowExecutionContext> ResumeAsync(
+        public virtual async Task<WorkflowExecutionContext> ResumeAsync(
             WorkflowInstance workflowInstance,
             Variables input = null,
             IEnumerable<string> startActivityIds = default,
@@ -112,7 +112,50 @@ namespace Elsa.Services
             return await ExecuteAsync(workflow, true, startActivityIds, cancellationToken);
         }
 
-        public async Task<IEnumerable<WorkflowExecutionContext>> TriggerAsync(
+        public virtual Task<WorkflowExecutionContext> FallbackAsync(
+            Workflow workflow,
+            IEnumerable<IActivity> blockingActivities = default,
+            IEnumerable<IActivity> historyActivities = default,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return ExecuteFallbackAsync(workflow, blockingActivities, historyActivities, cancellationToken);
+        }
+
+        public virtual async Task<WorkflowExecutionContext> FallbackAsync<T>(
+            WorkflowInstance workflowInstance,
+            Variables input = default,
+            IEnumerable<string> blockingActivityIds = default,
+            IEnumerable<string> historyActivityIds = default,
+            CancellationToken cancellationToken = default
+        ) where T : IWorkflow, new()
+        {
+            var workflow = workflowFactory.CreateWorkflow<T>(input, workflowInstance);
+            var blockingActivities = workflow.Activities.Find(blockingActivityIds);
+            var historyActivities = workflow.Activities.Find(historyActivityIds);
+            return await FallbackAsync(workflow, blockingActivities, historyActivities, cancellationToken);
+        }
+
+        public virtual async Task<WorkflowExecutionContext> FallbackAsync(
+            WorkflowInstance workflowInstance,
+            Variables input = default,
+            IEnumerable<string> blockingActivityIds = default,
+            IEnumerable<string> historyActivityIds = default,
+            CancellationToken cancellationToken = default
+        )
+        {
+            var definition = await workflowRegistry.GetWorkflowDefinitionAsync(
+                workflowInstance.DefinitionId,
+                VersionOptions.SpecificVersion(workflowInstance.Version),
+                cancellationToken);
+            var workflow = workflowFactory.CreateWorkflow(definition, input, workflowInstance);
+
+            var blockingActivities = workflow.Activities.Find(blockingActivityIds);
+            var historyActivities = workflow.Activities.Find(historyActivityIds);
+            return await FallbackAsync(workflow, blockingActivities, historyActivities, cancellationToken);
+        }
+
+        public virtual async Task<IEnumerable<WorkflowExecutionContext>> TriggerAsync(
             string activityType,
             Variables input = default,
             string correlationId = default,
@@ -179,7 +222,7 @@ namespace Elsa.Services
             return await StartManyAsync(workflowDefinitions, input, correlationId, cancellationToken);
         }
 
-        private Task<WorkflowExecutionContext> ExecuteAsync(
+        protected virtual Task<WorkflowExecutionContext> ExecuteAsync(
             Workflow workflow,
             bool resume,
             IEnumerable<string> startActivityIds = default,
@@ -192,15 +235,117 @@ namespace Elsa.Services
             return ExecuteAsync(workflow, resume, startActivities, cancellationToken);
         }
 
-        private async Task<WorkflowExecutionContext> ExecuteAsync(
+        protected virtual async Task<WorkflowExecutionContext> ExecuteFallbackAsync(
+            Workflow workflow,
+            IEnumerable<IActivity> blockingActivities = default,
+            IEnumerable<IActivity> historyActivities = default,
+            CancellationToken cancellationToken = default
+        )
+        {
+            async Task PushScheduleActivity(IActivity activity, WorkflowExecutionContext context)
+            {
+                if (await activity.CanFallbackAsync(context, cancellationToken)) context.ScheduleActivity(activity);
+            }
+
+            var startActivities = historyActivities?.ToList();
+            if (startActivities?.Count > 0)
+            {
+                var historyActivityIds = workflow
+                    .ExecutionActivities
+                    .Where(x => x.Status == ExecutionActivityStatus.Finished)
+                    .Select(x => x.ActivityId)
+                    .ToList();
+
+                foreach (var activity in startActivities)
+                {
+                    if (!historyActivityIds.Contains(activity.Id))
+                    {
+                        throw new InvalidOperationException(
+                            $"No activity with an id of \"{activity.Id}\" exists in the history activity.");
+                    }
+                }
+            }
+
+            var workflowExecutionContext = await CreateWorkflowExecutionContextAsync(
+                workflow,
+                blockingActivities,
+                PushScheduleActivity,
+                cancellationToken
+            );
+
+            while (workflowExecutionContext.HasScheduledActivities)
+            {
+                var currentActivity = workflowExecutionContext.PopScheduledActivity();
+
+                var result = await FallbackActivityAsync(workflowExecutionContext, currentActivity, cancellationToken);
+
+                await workflowEventHandlers.InvokeAsync(
+                    async x => await x.ActivityFallbackedAsync(workflowExecutionContext, currentActivity, cancellationToken),
+                    logger
+                );
+
+                if (result == null)
+                    break;
+
+                await result.ExecuteAsync(this, workflowExecutionContext, cancellationToken);
+
+                workflowExecutionContext.IsFirstPass = false;
+            }
+
+            if (startActivities == null || startActivities.Count == 0)
+            {
+                var startActivityIds = workflow.ExecutionActivities
+                    .Where(x => x.Status == ExecutionActivityStatus.Finished)
+                    .OrderByDescending(x => x.FinishedAt)
+                    .Take(1)
+                    .Select(x => x.ActivityId)
+                    .ToList();
+
+                startActivities = workflow.Activities.Find(startActivityIds).ToList();
+            }
+
+            foreach (var activity in startActivities)
+            {
+                if (await activity.CanExecuteAsync(workflowExecutionContext, cancellationToken))
+                {
+                    workflowExecutionContext.ScheduleActivity(activity);
+                }
+            }
+
+            while (workflowExecutionContext.HasScheduledActivities)
+            {
+                var currentActivity = workflowExecutionContext.PopScheduledActivity();
+
+                var result = await ExecuteActivityAsync(workflowExecutionContext, currentActivity, cancellationToken);
+
+                if (result == null)
+                    break;
+
+                await result.ExecuteAsync(this, workflowExecutionContext, cancellationToken);
+
+                workflowExecutionContext.IsFirstPass = false;
+            }
+
+            await FinalizeWorkflowExecutionAsync(workflowExecutionContext, cancellationToken);
+
+            return workflowExecutionContext;
+        }
+
+        protected virtual async Task<WorkflowExecutionContext> ExecuteAsync(
             Workflow workflow,
             bool resume,
             IEnumerable<IActivity> startActivities = default,
             CancellationToken cancellationToken = default)
         {
+            async Task PushScheduleActivity(IActivity activity, WorkflowExecutionContext context)
+            {
+                if (await activity.CanExecuteAsync(context, cancellationToken)) context.ScheduleActivity(activity);
+            }
+
             var workflowExecutionContext = await CreateWorkflowExecutionContextAsync(
                 workflow,
                 startActivities,
+                PushScheduleActivity,
                 cancellationToken
             );
 
@@ -232,7 +377,7 @@ namespace Elsa.Services
             IEnumerable<(WorkflowDefinitionVersion, ActivityDefinition)> workflowDefinitions,
             Variables input,
             string correlationId,
-            CancellationToken cancellationToken1)
+            CancellationToken cancellationToken)
         {
             var executionContexts = new List<WorkflowExecutionContext>();
 
@@ -248,7 +393,7 @@ namespace Elsa.Services
                     workflow,
                     false,
                     startActivityIds,
-                    cancellationToken1
+                    cancellationToken
                 );
                 executionContexts.Add(executionContext);
             }
@@ -301,7 +446,7 @@ namespace Elsa.Services
             {
                 workflowExecutionContext.Finish();
             }
-            else
+            else if(workflowExecutionContext.Workflow.IsExecuting())
             {
                 // Notify event handlers that halting activities are about to be executed.
                 await workflowEventHandlers.InvokeAsync(
@@ -330,7 +475,7 @@ namespace Elsa.Services
             );
         }
 
-        private async Task<ActivityExecutionResult> ExecuteActivityAsync(
+        protected virtual async Task<ActivityExecutionResult> ExecuteActivityAsync(
             WorkflowExecutionContext workflowContext,
             IActivity activity,
             CancellationToken cancellationToken)
@@ -338,12 +483,18 @@ namespace Elsa.Services
             return await InvokeActivityAsync(
                 workflowContext,
                 activity,
-                async () => await activityInvoker.ExecuteAsync(workflowContext, activity, cancellationToken),
+                async () =>
+                {
+                    await workflowEventHandlers.InvokeAsync(async x =>
+                        await x.ActivityExecutingAsync(workflowContext, activity, cancellationToken), logger);
+
+                    return await activityInvoker.ExecuteAsync(workflowContext, activity, cancellationToken);
+                },
                 cancellationToken
             );
         }
 
-        private async Task<ActivityExecutionResult> ResumeActivityAsync(
+        protected virtual async Task<ActivityExecutionResult> ResumeActivityAsync(
             WorkflowExecutionContext workflowContext,
             IActivity activity,
             CancellationToken cancellationToken)
@@ -356,7 +507,33 @@ namespace Elsa.Services
             );
         }
 
-        private async Task<ActivityExecutionResult> InvokeActivityAsync(
+        protected virtual async Task<ActivityExecutionResult> FallbackActivityAsync(
+            WorkflowExecutionContext workflowContext,
+            IActivity activity,
+            CancellationToken cancellationToken)
+        {
+            return await InvokeActivityAsync(
+                workflowContext,
+                activity,
+                async () => await activityInvoker.FallbackAsync(workflowContext, activity, cancellationToken),
+                cancellationToken
+            );
+        }
+
+        protected virtual async Task<ActivityExecutionResult> ExecuteActivityHaltedAsync(
+            WorkflowExecutionContext workflowContext,
+            IActivity activity,
+            CancellationToken cancellationToken)
+        {
+            return await InvokeActivityAsync(
+                workflowContext,
+                activity,
+                async () => await activityInvoker.HaltedAsync(workflowContext, activity, cancellationToken),
+                cancellationToken
+            );
+        }
+
+        protected virtual async Task<ActivityExecutionResult> InvokeActivityAsync(
             WorkflowExecutionContext workflowContext,
             IActivity activity,
             Func<Task<ActivityExecutionResult>> executeAction,
@@ -375,46 +552,47 @@ namespace Elsa.Services
             }
             catch (Exception ex)
             {
-                FaultWorkflow(workflowContext, activity, ex);
+                await FaultWorkflowAsync(workflowContext, activity, ex);
             }
 
             return null;
         }
 
-        private async Task<ActivityExecutionResult> ExecuteActivityHaltedAsync(
+
+        private async Task FaultWorkflowAsync(
             WorkflowExecutionContext workflowContext,
             IActivity activity,
-            CancellationToken cancellationToken)
+            Exception ex
+        )
         {
-            return await InvokeActivityAsync(
-                workflowContext,
-                activity,
-                async () => await activityInvoker.HaltedAsync(workflowContext, activity, cancellationToken),
-                cancellationToken
-            );
-        }
-
-        private void FaultWorkflow(WorkflowExecutionContext workflowContext, IActivity activity, Exception ex)
-        {
+            var errMessage =
+                "An unhandled error occurred while executing an activity. Putting the workflow in the faulted state.";
             logger.LogError(
-                ex,
-                "An unhandled error occurred while executing an activity. Putting the workflow in the faulted state."
+                ex, errMessage
             );
+
+            await workflowEventHandlers.InvokeAsync(async x =>
+                await x.ActivityFaultedAsync(workflowContext, activity, errMessage, default), logger);
+
             workflowContext.Fault(activity, ex);
         }
 
-        private async Task<WorkflowExecutionContext> CreateWorkflowExecutionContextAsync(
+        protected virtual async Task<WorkflowExecutionContext> CreateWorkflowExecutionContextAsync(
             Workflow workflow,
             IEnumerable<IActivity> startActivities,
+            Func<IActivity, WorkflowExecutionContext,Task> pushScheduleActivity,
             CancellationToken cancellationToken)
         {
             var workflowExecutionContext = new WorkflowExecutionContext(workflow, clock, serviceProvider);
-            var startActivityList = startActivities?.ToList() ?? workflow.GetStartActivities().Take(1).ToList();
+            var startActivityList = startActivities?.ToList();
+            if (startActivityList == null || startActivityList.Count == 0)
+            {
+                startActivityList = workflow.GetStartActivities().Take(1).ToList();
+            }
 
             foreach (var startActivity in startActivityList)
             {
-                if (await startActivity.CanExecuteAsync(workflowExecutionContext, cancellationToken))
-                    workflowExecutionContext.ScheduleActivity(startActivity);
+                await pushScheduleActivity(startActivity, workflowExecutionContext);
             }
 
             if (workflowExecutionContext.HasScheduledActivities)
@@ -428,7 +606,7 @@ namespace Elsa.Services
             return workflowExecutionContext;
         }
 
-        private async Task<IEnumerable<(WorkflowDefinitionVersion, ActivityDefinition)>> FilterRunningSingletonsAsync(
+        protected virtual async Task<IEnumerable<(WorkflowDefinitionVersion, ActivityDefinition)>> FilterRunningSingletonsAsync(
             IEnumerable<(WorkflowDefinitionVersion, ActivityDefinition)> workflowDefinitions,
             CancellationToken cancellationToken)
         {

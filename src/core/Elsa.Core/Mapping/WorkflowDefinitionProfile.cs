@@ -1,9 +1,10 @@
 using AutoMapper;
 using Elsa.Models;
+using Elsa.Services;
 
 namespace Elsa.Mapping
 {
-    public class WorkflowDefinitionProfile : Profile
+    public class WorkflowDefinitionProfile : MappingProfile
     {
         public WorkflowDefinitionProfile()
         {

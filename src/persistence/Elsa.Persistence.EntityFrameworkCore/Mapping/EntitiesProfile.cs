@@ -3,10 +3,11 @@ using System.Linq;
 using AutoMapper;
 using Elsa.Models;
 using Elsa.Persistence.EntityFrameworkCore.Entities;
+using Elsa.Services;
 
 namespace Elsa.Persistence.EntityFrameworkCore.Mapping
 {
-    public class EntitiesProfile : Profile
+    public class EntitiesProfile : MappingProfile
     {
         public EntitiesProfile()
         {
@@ -29,19 +30,34 @@ namespace Elsa.Persistence.EntityFrameworkCore.Mapping
 
             CreateMap<ActivityDefinition, ActivityDefinitionEntity>()
                 .ForMember(d => d.Id, d => d.Ignore())
-                .ForMember(d => d.ActivityId, d => d.MapFrom(s => s.Id));
-            
+                .ForMember(d => d.ActivityId, d => d.MapFrom(s => s.Id))
+                .ForMember(d => d.WorkflowDefinitionVersion, d => d.Ignore());
+
             CreateMap<ActivityDefinitionEntity, ActivityDefinition>()
                 .ForCtorParam("id", p => p.MapFrom(s => s.ActivityId))
                 .ForMember(d => d.Id, d => d.MapFrom(s => s.ActivityId));
-            
+
             CreateMap<ActivityInstance, ActivityInstanceEntity>()
                 .ForMember(d => d.Id, d => d.Ignore())
-                .ForMember(d => d.ActivityId, d => d.MapFrom(s => s.Id));
-            
+                .ForMember(d => d.ActivityId, d => d.MapFrom(s => s.Id))
+                .ForMember(d => d.WorkflowInstance, d => d.Ignore());
+
             CreateMap<ActivityInstanceEntity, ActivityInstance>().ForMember(d => d.Id, d => d.MapFrom(s => s.ActivityId));
-            CreateMap<BlockingActivity, BlockingActivityEntity>().ReverseMap();
-            CreateMap<ConnectionDefinition, ConnectionDefinitionEntity>().ReverseMap();
+            CreateMap<BlockingActivity, BlockingActivityEntity>()
+                .ForMember(d => d.Id, d => d.Ignore())
+                .ForMember(d => d.WorkflowInstance, d => d.Ignore())
+                .ReverseMap();
+
+            CreateMap<ConnectionDefinition, ConnectionDefinitionEntity>()
+                .ForMember(d => d.Id, d => d.Ignore())
+                .ForMember(d => d.WorkflowDefinitionVersion, d => d.Ignore())
+                .ReverseMap();
+
+
+            CreateMap<ExecutionActivity, ExecutionActivityEntity>()
+                .ForMember(d => d.Id, d => d.Ignore())
+                .ForMember(d => d.WorkflowInstance, d => d.Ignore())
+                .ReverseMap();
         }
     }
 

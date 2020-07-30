@@ -45,6 +45,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.DbContexts
         public DbSet<ConnectionDefinitionEntity> ConnectionDefinitions { get; set; }
         public DbSet<ActivityInstanceEntity> ActivityInstances { get; set; }
         public DbSet<BlockingActivityEntity> BlockingActivities { get; set; }
+        public DbSet<ExecutionActivityEntity> ExecutionActivities { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -55,6 +56,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.DbContexts
             ConfigureActivityDefinition(modelBuilder);
             ConfigureActivityInstance(modelBuilder);
             ConfigureBlockingActivity(modelBuilder);
+            ConfigureExecutionActivity(modelBuilder);
         }
 
         private void ConfigureWorkflowDefinitionVersion(ModelBuilder modelBuilder)
@@ -81,6 +83,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.DbContexts
                 modelBuilder.ApplyConfiguration(new SchemaEntityTypeConfiguration<ConnectionDefinitionEntity>(DbContextCustomSchema));
                 modelBuilder.ApplyConfiguration(new SchemaEntityTypeConfiguration<WorkflowDefinitionVersionEntity>(DbContextCustomSchema));
                 modelBuilder.ApplyConfiguration(new SchemaEntityTypeConfiguration<WorkflowInstanceEntity>(DbContextCustomSchema));
+                modelBuilder.ApplyConfiguration(new SchemaEntityTypeConfiguration<ExecutionActivityEntity>(DbContextCustomSchema));
             }
         }
 
@@ -95,7 +98,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.DbContexts
                 .Property(x => x.Scopes)
                 .HasConversion(
                     x => Serialize(x),
-                    x => Deserialize<Stack<WorkflowExecutionScope>>(x)
+                    x => DeserializeScopes(x)
                 );
             
             entity
@@ -168,6 +171,12 @@ namespace Elsa.Persistence.EntityFrameworkCore.DbContexts
             entity.HasKey(x => x.Id);
         }
 
+        private void ConfigureExecutionActivity(ModelBuilder modelBuilder)
+        {
+            var entity = modelBuilder.Entity<ExecutionActivityEntity>();
+            entity.HasKey(x => x.Id);
+        }
+
         private string Serialize(object value)
         {
             return JsonConvert.SerializeObject(value, serializerSettings);
@@ -176,6 +185,12 @@ namespace Elsa.Persistence.EntityFrameworkCore.DbContexts
         private T Deserialize<T>(string json)
         {
             return JsonConvert.DeserializeObject<T>(json, serializerSettings);
+        }
+
+        private Stack<WorkflowExecutionScope> DeserializeScopes(string json)
+        {
+            var reversedScopes = JsonConvert.DeserializeObject<Stack<WorkflowExecutionScope>>(json, serializerSettings);
+            return reversedScopes is { } ? new Stack<WorkflowExecutionScope>(reversedScopes) : null;
         }
     }
 }

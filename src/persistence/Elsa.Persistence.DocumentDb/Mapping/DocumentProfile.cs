@@ -1,10 +1,11 @@
 using AutoMapper;
 using Elsa.Models;
 using Elsa.Persistence.DocumentDb.Documents;
+using Elsa.Services;
 
 namespace Elsa.Persistence.DocumentDb.Mapping
 {
-    public class DocumentProfile : Profile
+    public class DocumentProfile : MappingProfile
     {
         public DocumentProfile()
         {

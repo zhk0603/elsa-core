@@ -55,6 +55,9 @@ namespace Elsa.Services
         {
             Id = Id,
             Type = Type,
+            Name = Name,
+            DisplayName = Title,
+            Description = Description,
             State = new JObject(State),
             Output = JObject.FromObject(Output)
         };

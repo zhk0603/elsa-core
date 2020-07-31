@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+      <TargetFramework>netstandard2.0</TargetFramework>
+      <PackageVersion>1.0.0</PackageVersion>
+      <LangVersion>latest</LangVersion>
+      <Authors>Elsa Contributors</Authors>
+      <Description>
+      </Description>
+      <Copyright>2019</Copyright>
+      <PackageProjectUrl>https://github.com/elsa-workflows/elsa-core</PackageProjectUrl>
+      <RepositoryUrl>https://github.com/elsa-workflows/elsa-core</RepositoryUrl>
+      <RepositoryType>GitHub</RepositoryType>
+      <PackageTags>elsa, workflows</PackageTags>
+      <PackageIcon>icon.png</PackageIcon>
+  </PropertyGroup>
+
+
+    <ItemGroup>
+        <None Include="icon.png" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\core\Elsa.Core\Elsa.Core.csproj" />
+        <ProjectReference Include="..\..\scripting\Elsa.Scripting.JavaScript\Elsa.Scripting.JavaScript.csproj" />
+    </ItemGroup>
+
+</Project>

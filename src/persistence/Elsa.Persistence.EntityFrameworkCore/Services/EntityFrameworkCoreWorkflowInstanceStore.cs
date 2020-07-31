@@ -30,11 +30,16 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .WorkflowInstances
                 .Include(x => x.Activities)
                 .Include(x => x.BlockingActivities)
+                .Include(x => x.ExecutionActivities)
                 .FirstOrDefaultAsync(x => x.InstanceId == instance.Id, cancellationToken: cancellationToken);
 
             if (existingEntity == null)
             {
                 var entity = Map(instance);
+
+                UpdateActivities(entity, instance);
+                UpdateBlockingActivities(entity, instance);
+                UpdateExecutionActivities(entity, instance);
 
                 await dbContext.WorkflowInstances.AddAsync(entity, cancellationToken);
                 await dbContext.SaveChangesAsync(cancellationToken);
@@ -62,6 +67,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .WorkflowInstances
                 .Include(x => x.Activities)
                 .Include(x => x.BlockingActivities)
+                .Include(x => x.ExecutionActivities)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.InstanceId == id, cancellationToken);
 
@@ -76,6 +82,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .WorkflowInstances
                 .Include(x => x.Activities)
                 .Include(x => x.BlockingActivities)
+                .Include(x => x.ExecutionActivities)
                 .Where(x => x.CorrelationId == correlationId)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken);
@@ -91,6 +98,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .WorkflowInstances
                 .Include(x => x.Activities)
                 .Include(x => x.BlockingActivities)
+                .Include(x => x.ExecutionActivities)
                 .Where(x => x.DefinitionId == definitionId)
                 .OrderByDescending(x => x.CreatedAt)
                 .AsNoTracking()
@@ -105,6 +113,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .WorkflowInstances
                 .Include(x => x.Activities)
                 .Include(x => x.BlockingActivities)
+                .Include(x => x.ExecutionActivities)
                 .OrderByDescending(x => x.CreatedAt)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
@@ -120,6 +129,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .WorkflowInstances
                 .Include(x => x.Activities)
                 .Include(x => x.BlockingActivities)
+                .Include(x => x.ExecutionActivities)
                 .AsNoTracking()
                 .AsQueryable();
 
@@ -146,6 +156,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .WorkflowInstances
                 .Include(x => x.Activities)
                 .Include(x => x.BlockingActivities)
+                .Include(x => x.ExecutionActivities)
                 .Where(x => x.DefinitionId == definitionId && x.Status == status)
                 .OrderByDescending(x => x.CreatedAt)
                 .AsNoTracking()
@@ -162,6 +173,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .WorkflowInstances
                 .Include(x => x.Activities)
                 .Include(x => x.BlockingActivities)
+                .Include(x => x.ExecutionActivities)
                 .Where(x => x.Status == status)
                 .OrderByDescending(x => x.CreatedAt)
                 .AsNoTracking()

@@ -21,12 +21,15 @@ namespace Elsa.Dashboard.ActionFilters
 
         public void OnActionExecuted(ActionExecutedContext context)
         {
-            var tempData = ((Controller) context.Controller).TempData;
+            if (context.Controller is Controller controller)
+            {
+                var tempData = controller.TempData;
 
-            if (tempData.ContainsKey(TempDataKey))
-                return;
-            
-            tempData.Put(TempDataKey, notifier.Notifications);
+                if (tempData.ContainsKey(TempDataKey))
+                    return;
+
+                tempData.Put(TempDataKey, notifier.Notifications);
+            }
         }
     }
 }

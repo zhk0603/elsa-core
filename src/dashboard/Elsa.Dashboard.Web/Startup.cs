@@ -1,3 +1,4 @@
+using Elsa.Activities.Console.Extensions;
 using Elsa.Activities.Email.Extensions;
 using Elsa.Activities.Http.Extensions;
 using Elsa.Activities.Timers.Extensions;
@@ -10,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 
 namespace Elsa.Dashboard.Web
 {
@@ -39,9 +41,19 @@ namespace Elsa.Dashboard.Web
                 .AddHttpActivities(options => options.Bind(elsaSection.GetSection("Http")))
                 .AddEmailActivities(options => options.Bind(elsaSection.GetSection("Smtp")))
                 .AddTimerActivities(options => options.Bind(elsaSection.GetSection("Timers")))
+                .AddConsoleActivities()
                 
                 // Add Dashboard services.
                 .AddElsaDashboard();
+
+            services.AddSwaggerGen(
+                options =>
+                {
+                    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Elsa Dashboard Web API", Version = "v1" });
+                    options.DocInclusionPredicate((docName, description) => true);
+                    options.CustomSchemaIds(type => type.FullName);
+                }
+            );
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -55,6 +67,11 @@ namespace Elsa.Dashboard.Web
                 
                 .UseStaticFiles()
                 .UseRouting()
+                .UseSwagger()
+                .UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Elsa Dashboard Web API");
+                })
                 .UseEndpoints(endpoints => endpoints.MapControllers())
                 .UseWelcomePage();
         }

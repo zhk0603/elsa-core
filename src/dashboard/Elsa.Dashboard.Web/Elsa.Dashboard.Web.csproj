@@ -5,6 +5,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Swashbuckle.AspNetCore" Version="5.5.1" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\..\core\Elsa\Elsa.csproj" />
         <ProjectReference Include="..\..\dashboard\Elsa.Dashboard\Elsa.Dashboard.csproj" />
         <ProjectReference Include="..\..\persistence\Elsa.Persistence.EntityFrameworkCore\Elsa.Persistence.EntityFrameworkCore.csproj" />

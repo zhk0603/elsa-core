@@ -46,7 +46,9 @@ namespace Elsa.Persistence.EntityFrameworkCore.Mapping
                 .ForMember(d => d.ActivityId, d => d.MapFrom(s => s.Id))
                 .ForMember(d => d.WorkflowInstance, d => d.Ignore());
 
-            CreateMap<ActivityInstanceEntity, ActivityInstance>().ForMember(d => d.Id, d => d.MapFrom(s => s.ActivityId));
+            CreateMap<ActivityInstanceEntity, ActivityInstance>()
+                .ForMember(d => d.Id, d => d.MapFrom(s => s.ActivityId));
+
             CreateMap<BlockingActivity, BlockingActivityEntity>()
                 .ForMember(d => d.Id, d => d.Ignore())
                 .ForMember(d => d.WorkflowInstance, d => d.Ignore())

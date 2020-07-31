@@ -70,6 +70,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Elsa.Dashboard.Web", "src\d
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Elsa.Activities.Reflection", "src\activities\Elsa.Activities.Reflection\Elsa.Activities.Reflection.csproj", "{1689E6C1-DD2B-4ECC-B9C8-E6A7E4E6AAA0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elsa.Activities.Permission", "src\activities\Elsa.Activities.Permission\Elsa.Activities.Permission.csproj", "{2DAFA4FB-6310-4F06-A645-F9A7CDD92538}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -164,6 +166,10 @@ Global
 		{1689E6C1-DD2B-4ECC-B9C8-E6A7E4E6AAA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1689E6C1-DD2B-4ECC-B9C8-E6A7E4E6AAA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1689E6C1-DD2B-4ECC-B9C8-E6A7E4E6AAA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DAFA4FB-6310-4F06-A645-F9A7CDD92538}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DAFA4FB-6310-4F06-A645-F9A7CDD92538}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DAFA4FB-6310-4F06-A645-F9A7CDD92538}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DAFA4FB-6310-4F06-A645-F9A7CDD92538}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -196,6 +202,7 @@ Global
 		{ED2A4FE5-821B-46F7-B72F-E66DE0D66C93} = {35F44BE9-13D0-417C-A01A-F0787BEE6DC3}
 		{7179277B-E692-43CA-8243-3FE4FC2DD1EA} = {8B87D79A-F0DE-4F88-81D3-8C8C69108ADB}
 		{1689E6C1-DD2B-4ECC-B9C8-E6A7E4E6AAA0} = {B43B546E-23F3-46E8-ACB7-D04F05CDA180}
+		{2DAFA4FB-6310-4F06-A645-F9A7CDD92538} = {B43B546E-23F3-46E8-ACB7-D04F05CDA180}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8B0975FD-7050-48B0-88C5-48C33378E158}

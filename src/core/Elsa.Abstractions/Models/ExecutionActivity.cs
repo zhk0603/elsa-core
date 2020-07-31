@@ -5,6 +5,11 @@ namespace Elsa.Models
 {
     public class ExecutionActivity
     {
+        public ExecutionActivity()
+        {
+            // for automapper
+        }
+
         public ExecutionActivity(IActivity activity)
         {
             ActivityId = activity.Id;

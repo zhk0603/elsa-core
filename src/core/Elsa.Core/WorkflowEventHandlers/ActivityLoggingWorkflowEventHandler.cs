@@ -65,7 +65,7 @@ namespace Elsa.WorkflowEventHandlers
             var executionActivity = workflowExecutionContext.GetActivityLastExecutionEntry(activity);
             if (executionActivity?.Status == ExecutionActivityStatus.Executing)
             {
-                executionActivity.FaultedAt = timeStamp;
+                executionActivity.FinishedAt = timeStamp;
                 executionActivity.Status = ExecutionActivityStatus.Finished;
                 executionActivity.HandleStatus = ActivityHandleStatus.Fallback;
             }

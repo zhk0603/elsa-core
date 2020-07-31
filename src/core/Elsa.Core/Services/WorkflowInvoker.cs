@@ -296,7 +296,7 @@ namespace Elsa.Services
             {
                 var startActivityIds = workflow.ExecutionActivities
                     .Where(x => x.Status == ExecutionActivityStatus.Finished)
-                    .OrderByDescending(x => x.FinishedAt)
+                    .OrderBy(x => x.FinishedAt)
                     .Take(1)
                     .Select(x => x.ActivityId)
                     .ToList();

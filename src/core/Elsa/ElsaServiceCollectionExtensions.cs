@@ -1,6 +1,7 @@
 using System;
 using Elsa;
 using Elsa.Activities.ControlFlow.Extensions;
+using Elsa.Activities.Permission.Extensions;
 using Elsa.Activities.UserTask.Extensions;
 using Elsa.Activities.Workflows.Extensions;
 using Elsa.Runtime;
@@ -23,7 +24,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddLiquidExpressionEvaluator()
                 .AddControlFlowActivities()
                 .AddWorkflowActivities()
-                .AddUserTaskActivities();
+                .AddUserTaskActivities()
+                .AddPermissionActivities();
         }
     }
 }

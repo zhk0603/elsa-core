@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
@@ -29,6 +29,7 @@
       <ProjectReference Include="..\..\activities\Elsa.Activities.ControlFlow\Elsa.Activities.ControlFlow.csproj" />
       <ProjectReference Include="..\..\activities\Elsa.Activities.Email\Elsa.Activities.Email.csproj" />
       <ProjectReference Include="..\..\activities\Elsa.Activities.Http\Elsa.Activities.Http.csproj" />
+      <ProjectReference Include="..\..\activities\Elsa.Activities.Permission\Elsa.Activities.Permission.csproj" />
       <ProjectReference Include="..\..\activities\Elsa.Activities.Timers\Elsa.Activities.Timers.csproj" />
       <ProjectReference Include="..\..\activities\Elsa.Activities.UserTask\Elsa.Activities.UserTask.csproj" />
       <ProjectReference Include="..\..\activities\Elsa.Activities.Workflows\Elsa.Activities.Workflows.csproj" />

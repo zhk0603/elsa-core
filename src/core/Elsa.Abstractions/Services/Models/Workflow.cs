@@ -33,6 +33,7 @@ namespace Elsa.Services.Models
             Scopes = new Stack<WorkflowExecutionScope>(new[] { new WorkflowExecutionScope() });
             BlockingActivities = new HashSet<IActivity>();
             ExecutionLog = new List<LogEntry>();
+            ExecutionActivities = new List<ExecutionActivity>();
         }
 
         public string Id { get; set; }

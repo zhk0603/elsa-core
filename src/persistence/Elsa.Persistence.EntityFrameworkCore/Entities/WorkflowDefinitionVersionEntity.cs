@@ -1,5 +1,6 @@
 using Elsa.Models;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Elsa.Persistence.EntityFrameworkCore.Entities
 {
@@ -18,5 +19,11 @@ namespace Elsa.Persistence.EntityFrameworkCore.Entities
         public bool IsLatest { get; set; }
         public ICollection<ActivityDefinitionEntity> Activities { get; set; }
         public ICollection<ConnectionDefinitionEntity> Connections { get; set; }
+
+        public WorkflowDefinitionVersionEntity()
+        {
+            Activities = new Collection<ActivityDefinitionEntity>();
+            Connections = new Collection<ConnectionDefinitionEntity>();
+        }
     }
 }

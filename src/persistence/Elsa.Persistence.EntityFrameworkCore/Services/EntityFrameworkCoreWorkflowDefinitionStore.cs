@@ -29,6 +29,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                     .WorkflowDefinitionVersions
                     .Include(x => x.Activities)
                     .Include(x => x.Connections)
+                    .AsNoTracking()
                     .FirstOrDefaultAsync(x => x.VersionId == definition.Id, cancellationToken);
 
             if (existingEntity == null)
@@ -40,6 +41,10 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
         public async Task<WorkflowDefinitionVersion> AddAsync(WorkflowDefinitionVersion definition, CancellationToken cancellationToken = default)
         {
             var entity = Map(definition);
+
+            UpdateActivities(entity, definition);
+            UpdateConnections(entity, definition);
+
             await dbContext.WorkflowDefinitionVersions.AddAsync(entity, cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
             return Map(entity);
@@ -53,9 +58,11 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .Include(x => x.Connections)
                 .FirstOrDefaultAsync(x => x.VersionId == definition.Id, cancellationToken);
 
-            DeleteActivities(entity);
-            DeleteConnections(entity);
-            
+            UpdateActivities(entity, definition);
+            UpdateConnections(entity, definition);
+            //DeleteActivities(entity);
+            //DeleteConnections(entity);
+
             entity = mapper.Map(definition, entity);
             
             dbContext.WorkflowDefinitionVersions.Update(entity);
@@ -75,6 +82,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .Include(x => x.Activities)
                 .Include(x => x.Connections)
                 .AsQueryable()
+                .AsNoTracking()
                 .Where(x => x.DefinitionId == id)
                 .WithVersion(version);
 
@@ -92,6 +100,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .Include(x => x.Activities)
                 .Include(x => x.Connections)
                 .AsQueryable()
+                .AsNoTracking()
                 .WithVersion(version);
 
             var entities = await query.ToListAsync(cancellationToken);
@@ -136,13 +145,54 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
 
             return definitionRecords.Count;
         }
-        
+
+        private void UpdateActivities(WorkflowDefinitionVersionEntity entity, WorkflowDefinitionVersion definition)
+        {
+            var newIds = definition.Activities.Select(x => x.Id);
+            var oldIds = entity.Activities.Select(x => x.ActivityId);
+            var delIds = oldIds.Except(newIds);
+            dbContext.ActivityDefinitions.RemoveRange(entity.Activities.Where(x => delIds.Contains(x.ActivityId)));
+
+            foreach (var activity in definition.Activities)
+            {
+                var activityEntity = entity.Activities.FirstOrDefault(x => x.ActivityId == activity.Id);
+                if (activityEntity == null) // insert
+                {
+                    entity.Activities.Add(mapper.Map<ActivityDefinition, ActivityDefinitionEntity>(activity));
+                }
+                else
+                {
+                    mapper.Map(activity, activityEntity); // update
+                    dbContext.ActivityDefinitions.Update(activityEntity);
+                }
+            }
+        }
+
+        private void UpdateConnections(WorkflowDefinitionVersionEntity entity, WorkflowDefinitionVersion definition)
+        {
+            var delConn = entity.Connections.Where(x =>
+                !definition.Connections.Any(y =>
+                    y.SourceActivityId == x.SourceActivityId &&
+                    y.DestinationActivityId == x.DestinationActivityId));
+            dbContext.ConnectionDefinitions.RemoveRange(delConn);
+
+            var insertConn = definition.Connections.Where(x =>
+                !entity.Connections.Any(y =>
+                    y.SourceActivityId == x.SourceActivityId &&
+                    y.DestinationActivityId == x.DestinationActivityId));
+            foreach (var connection in mapper.Map<IEnumerable<ConnectionDefinition>, IEnumerable<ConnectionDefinitionEntity>>(
+                insertConn))
+            {
+                entity.Connections.Add(connection);
+            }
+        }
+
         private void DeleteActivities(WorkflowDefinitionVersionEntity entity)
         {
             dbContext.ActivityDefinitions.RemoveRange(entity.Activities);
             entity.Activities.Clear();
         }
-        
+
         private void DeleteConnections(WorkflowDefinitionVersionEntity entity)
         {
             dbContext.ConnectionDefinitions.RemoveRange(entity.Connections);

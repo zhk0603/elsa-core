@@ -13,7 +13,9 @@ namespace Elsa.Persistence.EntityFrameworkCore.Mapping
         {
             CreateMap<WorkflowDefinitionVersion, WorkflowDefinitionVersionEntity>()
                 .ForMember(d => d.VersionId, d => d.MapFrom(s => s.Id))
-                .ForMember(d => d.Id, d => d.Ignore());
+                .ForMember(d => d.Id, d => d.Ignore())
+                .ForMember(d => d.Activities, d => d.Ignore())
+                .ForMember(d => d.Connections, d => d.Ignore());
 
             CreateMap<WorkflowDefinitionVersionEntity, WorkflowDefinitionVersion>()
                 .ForCtorParam("id", p => p.MapFrom(s => s.VersionId))
@@ -21,7 +23,9 @@ namespace Elsa.Persistence.EntityFrameworkCore.Mapping
 
             CreateMap<WorkflowInstance, WorkflowInstanceEntity>()
                 .ForMember(d => d.Id, d => d.Ignore())
-                .ForMember(d => d.Activities, d => d.ConvertUsing(new ActivityInstanceDictionaryConverter()))
+                .ForMember(d => d.Activities, d => d.Ignore())
+                .ForMember(d => d.BlockingActivities, d => d.Ignore())
+                .ForMember(d => d.ExecutionActivities, d => d.Ignore())
                 .ForMember(d => d.InstanceId, d => d.MapFrom(s => s.Id));
 
             CreateMap<WorkflowInstanceEntity, WorkflowInstance>()

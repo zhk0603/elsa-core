@@ -22,22 +22,24 @@ namespace Elsa.Models
             Left = left;
             Top = top;
             State = new JObject(state);
+            Name = GetStateValue<string>("name");
+            DisplayName = GetStateValue<string>("title");
+            Description = GetStateValue<string>("description");
         }
 
         public string Id { get; set; }
         public string Type { get; set; }
-
-        //public string Name
-        //{
-        //    get => State.ContainsKey(nameof(Name)) ? State[nameof(Name)].Value<string>() : default;
-        //    set => State[nameof(Name)] = value;
-        //}
         public string Name { get; set; }
         public string DisplayName { get; set; }
         public string Description { get; set; }
         public int Left { get; set; }
         public int Top { get; set; }
         public JObject State { get; set; }
+
+        private T GetStateValue<T>(string propertyName)
+        {
+            return State.ContainsKey(propertyName) ? State[propertyName].Value<T>() : default;
+        }
     }
 
     public class ActivityDefinition<T> : ActivityDefinition where T : IActivity

@@ -1,6 +1,7 @@
 using Elsa.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Elsa.Persistence.EntityFrameworkCore.Entities
 {
@@ -24,5 +25,12 @@ namespace Elsa.Persistence.EntityFrameworkCore.Entities
         public ICollection<ActivityInstanceEntity> Activities { get; set; }
         public ICollection<BlockingActivityEntity> BlockingActivities { get; set; }
         public ICollection<ExecutionActivityEntity> ExecutionActivities { get; set; }
+
+        public WorkflowInstanceEntity()
+        {
+            Activities = new Collection<ActivityInstanceEntity>();
+            BlockingActivities = new Collection<BlockingActivityEntity>();
+            ExecutionActivities = new Collection<ExecutionActivityEntity>();
+        }
     }
 }

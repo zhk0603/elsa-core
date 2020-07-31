@@ -42,12 +42,11 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
             }
             else
             {
-                dbContext.ActivityInstances.RemoveRange(existingEntity.Activities);
-                dbContext.BlockingActivities.RemoveRange(existingEntity.BlockingActivities);
-                existingEntity.Activities.Clear();
-                existingEntity.BlockingActivities.Clear();
-
                 var entity = mapper.Map(instance, existingEntity);
+
+                UpdateActivities(entity, instance);
+                UpdateBlockingActivities(entity, instance);
+                UpdateExecutionActivities(entity, instance);
 
                 dbContext.WorkflowInstances.Update(entity);
                 await dbContext.SaveChangesAsync(cancellationToken);
@@ -63,6 +62,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .WorkflowInstances
                 .Include(x => x.Activities)
                 .Include(x => x.BlockingActivities)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.InstanceId == id, cancellationToken);
 
             return Map(document);
@@ -77,6 +77,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .Include(x => x.Activities)
                 .Include(x => x.BlockingActivities)
                 .Where(x => x.CorrelationId == correlationId)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken);
 
             return Map(document);
@@ -92,6 +93,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .Include(x => x.BlockingActivities)
                 .Where(x => x.DefinitionId == definitionId)
                 .OrderByDescending(x => x.CreatedAt)
+                .AsNoTracking()
                 .ToListAsync(cancellationToken);
 
             return Map(documents);
@@ -104,6 +106,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .Include(x => x.Activities)
                 .Include(x => x.BlockingActivities)
                 .OrderByDescending(x => x.CreatedAt)
+                .AsNoTracking()
                 .ToListAsync(cancellationToken);
             return Map(documents);
         }
@@ -117,6 +120,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .WorkflowInstances
                 .Include(x => x.Activities)
                 .Include(x => x.BlockingActivities)
+                .AsNoTracking()
                 .AsQueryable();
 
             query = query.Where(x => x.Status == WorkflowStatus.Executing);
@@ -144,6 +148,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .Include(x => x.BlockingActivities)
                 .Where(x => x.DefinitionId == definitionId && x.Status == status)
                 .OrderByDescending(x => x.CreatedAt)
+                .AsNoTracking()
                 .ToListAsync(cancellationToken);
 
             return Map(documents);
@@ -159,6 +164,7 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
                 .Include(x => x.BlockingActivities)
                 .Where(x => x.Status == status)
                 .OrderByDescending(x => x.CreatedAt)
+                .AsNoTracking()
                 .ToListAsync(cancellationToken);
 
             return Map(documents);
@@ -186,6 +192,71 @@ namespace Elsa.Persistence.EntityFrameworkCore.Services
             dbContext.WorkflowInstances.Remove(record);
             
             await dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        private void UpdateActivities(WorkflowInstanceEntity entity, WorkflowInstance instance)
+        {
+            var newIds = instance.Activities.Select(x => x.Key);
+            var oldIds = entity.Activities.Select(x => x.ActivityId);
+            var delIds = oldIds.Except(newIds);
+            dbContext.ActivityInstances.RemoveRange(entity.Activities.Where(x => delIds.Contains(x.ActivityId)));
+
+            foreach (var keyValuePair in instance.Activities)
+            {
+                var activityEntity = entity.Activities.FirstOrDefault(x => x.ActivityId == keyValuePair.Key);
+                if (activityEntity == null) // insert
+                {
+                    entity.Activities.Add(mapper.Map<ActivityInstance, ActivityInstanceEntity>(keyValuePair.Value));
+                }
+                else
+                {
+                    mapper.Map(keyValuePair.Value, activityEntity); // update
+                    dbContext.ActivityInstances.Update(activityEntity);
+                }
+            }
+        }
+
+        private void UpdateBlockingActivities(WorkflowInstanceEntity entity, WorkflowInstance instance)
+        {
+            var newIds = instance.BlockingActivities.Select(x => x.ActivityId);
+            var oldIds = entity.BlockingActivities.Select(x => x.ActivityId);
+            var delIds = oldIds.Except(newIds);
+            dbContext.BlockingActivities.RemoveRange(entity.BlockingActivities.Where(x => delIds.Contains(x.ActivityId)));
+
+            foreach (var activity in instance.BlockingActivities)
+            {
+                var activityEntity = entity.BlockingActivities.FirstOrDefault(x => x.ActivityId == activity.ActivityId);
+                if (activityEntity == null) // insert
+                {
+                    entity.BlockingActivities.Add(mapper.Map<BlockingActivity, BlockingActivityEntity>(activity));
+                }
+                else
+                {
+                    mapper.Map(activity, activityEntity); // update
+                    dbContext.BlockingActivities.Update(activityEntity);
+                }
+            }
+        }
+
+        private void UpdateExecutionActivities(WorkflowInstanceEntity entity, WorkflowInstance instance)
+        {
+            foreach (var activity in instance.ExecutionActivities)
+            {
+                var activityEntity = entity.ExecutionActivities.SingleOrDefault(x =>
+                    x.ActivityId == activity.ActivityId && x.StartedAt == activity.StartedAt.ToDateTimeUtc());
+
+                if (activityEntity != null)
+                {
+                    mapper.Map(activity, activityEntity); // update
+                    dbContext.ExecutionActivities.Update(activityEntity);
+                }
+                else
+                {
+                    entity.ExecutionActivities.Add(mapper.Map<ExecutionActivity, ExecutionActivityEntity>(activity));
+                }
+
+                // tips: 没有存在需要删除的。
+            }
         }
 
         private WorkflowInstanceEntity Map(WorkflowInstance source) => mapper.Map<WorkflowInstanceEntity>(source);

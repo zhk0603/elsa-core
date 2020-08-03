@@ -1,4 +1,6 @@
+using Elsa.Activities.Permission.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Elsa.Activities.Permission.Extensions
 {
@@ -6,8 +8,11 @@ namespace Elsa.Activities.Permission.Extensions
     {        
         public static IServiceCollection AddPermissionActivities(this IServiceCollection services)
         {
-            return services
-                .AddActivity<Activities.Permission>();
+            services
+                .AddActivity<Activities.Permission>()
+                .TryAddTransient<IPermissionChecker, NullPermissionChecker>();
+
+            return services;
         }
     }
 }

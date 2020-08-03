@@ -247,6 +247,11 @@ namespace Elsa.Services
                 if (await activity.CanFallbackAsync(context, cancellationToken)) context.ScheduleActivity(activity);
             }
 
+            if (workflow.IsFaultedOrAborted() || workflow.IsFinished())
+            {
+                throw new InvalidOperationException("Workflow has been finished or aborted");
+            }
+
             var startActivities = historyActivities?.ToList();
             if (startActivities?.Count > 0)
             {
@@ -340,6 +345,11 @@ namespace Elsa.Services
             async Task PushScheduleActivity(IActivity activity, WorkflowExecutionContext context)
             {
                 if (await activity.CanExecuteAsync(context, cancellationToken)) context.ScheduleActivity(activity);
+            }
+            
+            if (workflow.IsFaultedOrAborted() || workflow.IsFinished())
+            {
+                throw new InvalidOperationException("Workflow has been finished or aborted");
             }
 
             var workflowExecutionContext = await CreateWorkflowExecutionContextAsync(

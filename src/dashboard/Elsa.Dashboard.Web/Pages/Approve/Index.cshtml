@@ -1,0 +1,57 @@
+@page
+@model Elsa.Dashboard.Web.Pages.Approve.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Approve[0].WfInstanceId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Approve[0].WfActivityInstanceId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Approve[0].AuditStatus)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Approve[0].Type)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Approve[0].CorrelateId)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.Approve) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.WfInstanceId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.WfActivityInstanceId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AuditStatus)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Type)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CorrelateId)
+            </td>
+            <td>
+                <a asp-page="./Handle" asp-route-id="@item.Id" asp-route-pass="true">Pass</a> |
+                <a asp-page="./Handle" asp-route-id="@item.Id">Reject</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

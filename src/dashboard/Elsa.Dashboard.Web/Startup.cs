@@ -3,6 +3,7 @@ using Elsa.Activities.Email.Extensions;
 using Elsa.Activities.Http.Extensions;
 using Elsa.Activities.Timers.Extensions;
 using Elsa.Dashboard.Extensions;
+using Elsa.Dashboard.Web.Data;
 using Elsa.Persistence.EntityFrameworkCore.DbContexts;
 using Elsa.Persistence.EntityFrameworkCore.Extensions;
 using Microsoft.AspNetCore.Builder;
@@ -27,7 +28,12 @@ namespace Elsa.Dashboard.Web
         public void ConfigureServices(IServiceCollection services)
         {
             var elsaSection = Configuration.GetSection("Elsa");
-            
+
+            services.AddDbContext<DemoDbContext>(options =>
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("SqlServer"));
+            });
+
             services
                 // Add workflow services.
                 .AddElsa(x => x.AddEntityFrameworkStores<SqlServerContext>(options =>
@@ -54,6 +60,9 @@ namespace Elsa.Dashboard.Web
                     options.CustomSchemaIds(type => type.FullName);
                 }
             );
+
+            services.AddRazorPages()
+                .AddRazorRuntimeCompilation();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -72,7 +81,11 @@ namespace Elsa.Dashboard.Web
                 {
                     options.SwaggerEndpoint("/swagger/v1/swagger.json", "Elsa Dashboard Web API");
                 })
-                .UseEndpoints(endpoints => endpoints.MapControllers())
+                .UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllers();
+                    endpoints.MapRazorPages();
+                })
                 .UseWelcomePage();
         }
     }
